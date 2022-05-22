@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.IO;
-using System.Diagnostics;
 
 namespace LD5
 {
@@ -31,6 +29,8 @@ namespace LD5
             {
                 divData.Visible = false;
                 divResults.Visible = false;
+                Label2.Visible = false;
+                Label3.Visible = false;
             }
 
         }
@@ -69,7 +69,7 @@ namespace LD5
                 InOut.PrintToTxtFile(valuables, resultsFile, "",
                     String.Format("| {0,-13} | {1,-11} | {2,-8} | {3,-5} |", "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina"));
                 InOut.PrintToTxtFile(temp, resultsFile, "",
-                    String.Format("| {0,-11} | {1, -8}", "Pavadinimas", "Kiekis"));
+                    String.Format("| {0,-11} | {1, -8} |", "Pavadinimas", "Kiekis"));
                 InOut.PrintToTxtFile(cheapestValuables, resultsFile, "Pigiausios vertybės:",
                     String.Format("| {0,-13} | {1,-11} | {2,-8} | {3,-5} |", "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina"));
 
@@ -101,7 +101,7 @@ namespace LD5
 
                 List<Valuable> filterOrder = mergedValuables.Where(val =>
                 orderItems.Any(ord => val.Name == ord.Name))
-                .OrderBy(val1 => val1.Price).ToList(); //gets all items that are in the order by name
+                .OrderBy(val1 => val1.Price).ToList(); //gets all items that are in the order, ordered by price
 
                 var sum = filterOrder.Sum(val => val.Price * val.Count); // finds the sum of all valuables
                 List<Valuable> filterOrderRemoved = filterOrder.SkipWhile(val =>
@@ -113,22 +113,28 @@ namespace LD5
                     }
                     return false;
                 }
-                ).ToList();
+                ).OrderBy(val1 => val1.Name).ThenBy(val2 => val2.Count).ToList(); // removes all cheapest elements while sum of all is greater than given value
+                //orders by name and item count
+
                 if(filterOrderRemoved.Count > 0)
                 {
                     Label2.Text = "Pirkėjui atrinktos vertybės:";
                     ShowData(filterOrderRemoved, Table2, false, "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina");
-                    InOut.PrintToTxtFile(filterOrderRemoved, resultsFile, "Pirkėjui atrinktos vertybės:",
+                    InOut.PrintToTxtFile(filterOrderRemoved, resultsFile, String.Format("Atrinktų vertybių suma: {0}\nPirkėjui atrinktos vertybės:", sum),
                         String.Format("| {0,-13} | {1,-10} | {2,-8} | {3,-5} |", "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina"));
+                    Label3.Text = String.Format("Atrinktų vertybių suma: {0}", sum);
+                    Label3.Visible = true;
                 }
                 else
                 {
                     Label2.Text = "Nėra pirkėjui tinkamų vertybių.";
+                    InOut.PrintToTxtFile(new List<Valuable>(), resultsFile, "Nėra pirkėjui tinkamų vertybių.", "");
                 }
                 
                 Table2.Visible = true;
                 Label1.Visible = true;
                 Label2.Visible = true;
+                
             }
         }
     }
