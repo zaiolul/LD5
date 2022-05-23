@@ -80,6 +80,9 @@
     <Content Include="App_Data\Storage3.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="App_Data\Storage4 - Copy.txt" />
+    <Content Include="App_Data\Storage4.txt" />
+    <Content Include="App_Data\Storage5.txt" />
     <Content Include="Form1.aspx" />
     <Content Include="Style1.css" />
     <Content Include="Web.config" />

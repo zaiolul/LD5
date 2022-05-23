@@ -19,11 +19,13 @@ namespace LD5
             resultsFile = Server.MapPath("/App_Data/Rez.txt");
 
             if (Page.IsPostBack)
-            {
+            {   
+                //---------GET DATA AFTER PAGE LOAD-------------
                 mergedValuables = Session["merged"] as List<Valuable>;
                 cheapestValuables = Session["cheapest"] as List<Valuable>;
                 orderItems = Session["order"] as List<Order>;
-                valuables = Session["valuables"] as List<Tuple<string, List<Valuable>>>;        
+                valuables = Session["valuables"] as List<Tuple<string, List<Valuable>>>;   
+                //----------------------------------------------
             }
             else
             {
@@ -42,7 +44,8 @@ namespace LD5
                 File.Delete(resultsFile);
             }
             try
-            {
+            {   
+                //------------READ DATA-----------------------------------------------------
                 string dataDir = Server.MapPath("App_Data");
                 string[] storagePaths = Directory.GetFiles(dataDir, "Storage*.txt");
                 string[] orderPath = Directory.GetFiles(dataDir, "Order.txt");
@@ -55,29 +58,35 @@ namespace LD5
                 {
                     orderItems = InOut.ReadOrder(orderPath[0]);
                 }
+                //--------------------------------------------------------------------
                 mergedValuables = valuables.SelectMany(entry => entry.Item2).Distinct().ToList(); //merges all data into one list
 
                 cheapestValuables = mergedValuables.
                     Where(val => val.Price == mergedValuables.Min(v => v.Price)).ToList(); //finds all cheapest valuables
-
+                //-------------SHOW DATA ON THE PAGE----------------------------------
                 ShowData(valuables, false, "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina");
                 var temp = new List<Tuple<string, List<Order>>>();
                 temp.Add(new Tuple<string, List<Order>>("Order.txt", orderItems));
                 ShowData(temp, false, "Pavadinimas", "Kiekis");
                 ShowData(cheapestValuables, Table1, false, "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina");
+                //-------------------------------------------------------------------
 
+                //-------------PRINT DATA TO FILE------------------------------------
                 InOut.PrintToTxtFile(valuables, resultsFile, "",
                     String.Format("| {0,-13} | {1,-11} | {2,-8} | {3,-5} |", "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina"));
                 InOut.PrintToTxtFile(temp, resultsFile, "",
                     String.Format("| {0,-11} | {1, -8} |", "Pavadinimas", "Kiekis"));
                 InOut.PrintToTxtFile(cheapestValuables, resultsFile, "Pigiausios vertybės:",
                     String.Format("| {0,-13} | {1,-11} | {2,-8} | {3,-5} |", "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina"));
+                //-------------------------------------------------------------------
 
+                //------------SAVE DATA BETWEEN PAGE LOADS---------------------
                 Session["valuables"] = valuables;
                 Session["order"] = orderItems;
                 Session["merged"] = mergedValuables;
                 Session["cheapest"] = cheapestValuables;
                 Session["order"] = orderItems;
+                //-------------------------------------------------------------
 
                 divData.Visible = true;
                 divResults.Visible = true;
@@ -90,12 +99,13 @@ namespace LD5
 
         protected void Button2_Click(object sender, EventArgs e)
         {
+            //-------------SHOW DATA ON THE PAGE----------------------------------
             ShowData(valuables, false, "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina");
             var temp = new List<Tuple<string, List<Order>>>();
             temp.Add(new Tuple<string, List<Order>>("Order.txt", orderItems));
             ShowData(temp, false, "Pavadinimas", "Kiekis");
             ShowData(cheapestValuables, Table1, false, "Sandėlio nr.", "Pavadinimas", "Kiekis", "Kaina");
-
+            //--------------------------------------------------------------------
             if (IsNumber(TextBox1, Label1))
             {
 
@@ -116,6 +126,7 @@ namespace LD5
                 ).OrderBy(val1 => val1.Name).ThenBy(val2 => val2.Count).ToList(); // removes all cheapest elements while sum of all is greater than given value
                 //orders by name and item count
 
+                //-----------------DISPLAY AND PRINT DATA----------------------
                 if(filterOrderRemoved.Count > 0)
                 {
                     Label2.Text = "Pirkėjui atrinktos vertybės:";
@@ -130,6 +141,7 @@ namespace LD5
                     Label2.Text = "Nėra pirkėjui tinkamų vertybių.";
                     InOut.PrintToTxtFile(new List<Valuable>(), resultsFile, "Nėra pirkėjui tinkamų vertybių.", "");
                 }
+                //---------------------------------------------------------------------
                 
                 Table2.Visible = true;
                 Label1.Visible = true;
